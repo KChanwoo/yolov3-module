@@ -21,9 +21,10 @@ from lib.utill import get_all_file
 
 
 class YOLO:
-    def __init__(self, model_path):
-        self.__NUM_CLASS = len(utils.read_class_names(cfg.YOLO.CLASSES))
-        self.__CLASSES = utils.read_class_names(cfg.YOLO.CLASSES)
+    def __init__(self, model_path, class_path):
+        self.__class_path = class_path
+        self.__NUM_CLASS = len(utils.read_class_names(self.__class_path))
+        self.__CLASSES = utils.read_class_names(self.__class_path)
         self.__ANCHORS = utils.get_anchors(cfg.YOLO.ANCHORS)
         self.__STRIDES = np.array(cfg.YOLO.STRIDES)
         self.__IOU_LOSS_THRESH = cfg.YOLO.IOU_LOSS_THRESH
@@ -305,14 +306,15 @@ class YOLO:
 
                 i += 1
 
-    def train(self, main_dir, epoch=cfg.TRAIN.EPOCHS):
+    def train(self, main_dir, anno_path, epoch=cfg.TRAIN.EPOCHS):
         """
         start train
         :param main_dir path to save logs, etc.
+        :param anno_path path of annotation file
         :param epoch the number of epoch (default=30)
         """
         initialize_gpu(0, 4096)  # allocate 1 GB to index 0 gpu
-        trainset = Dataset('train')
+        trainset = Dataset('train', anno_path, self.__class_path)
 
         logdir = main_dir + "/log"
 
@@ -395,11 +397,12 @@ class YOLO:
 
         return resized
 
-    def test(self, predicted_dir_path, ground_truth_dir_path):
+    def test(self, predicted_dir_path, ground_truth_dir_path, anno_path):
         """
         test dataset
         :param predicted_dir_path path to save predicted result
         :param ground_truth_dir_path path to save ground truth information
+        :param anno_path annotation file path for test
         """
         # clear subfile in pred, gb path
         if os.path.exists(predicted_dir_path): shutil.rmtree(predicted_dir_path)
@@ -424,7 +427,7 @@ class YOLO:
             model = tf.keras.Model(input_tensor, output_tensors)
             model.load_weights(self.__model_path)
 
-            with open(cfg.TEST.ANNOT_PATH, 'r') as annotation_file:
+            with open(anno_path, 'r') as annotation_file:
                 for num, line in enumerate(annotation_file):
                     annotation = line.strip().split()
                     image_path = annotation[0]

@@ -9,7 +9,6 @@ Python 3.6.9 ~
 Tensorflow 2.0
 
 pip install tensorflow
-pip install tensorflow-gpu
 pip install git+https://git@github.com/KChanwoo/yolov3-module.git
 ```
 
@@ -18,16 +17,16 @@ pip install git+https://git@github.com/KChanwoo/yolov3-module.git
 from yolo import YOLO
 
 # initialize
-net = YOLO('path to save model')
+net = YOLO('path to save model', 'path of class name file')
 
 # train
-net.train('path to write logs')
+net.train('path to write logs', 'path of annotation file')
 
 # test
-net.test('path to save prediction result', 'path to save ground truth information')
+net.test('path to save prediction result', 'path to save ground truth information', 'path of annotation file')
 
 # predict
-marked_image, detect_result = net.predict('image path')
+cropped_image = net.predict('image path')
 ```
 
 ## Publish

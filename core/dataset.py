@@ -22,15 +22,15 @@ from core.config import cfg
 
 class Dataset(object):
     """implement Dataset here"""
-    def __init__(self, dataset_type):
-        self.annot_path  = cfg.TRAIN.ANNOT_PATH if dataset_type == 'train' else cfg.TEST.ANNOT_PATH
+    def __init__(self, dataset_type, annot_path, class_path):
+        self.annot_path  = annot_path
         self.input_sizes = cfg.TRAIN.INPUT_SIZE if dataset_type == 'train' else cfg.TEST.INPUT_SIZE
         self.batch_size  = cfg.TRAIN.BATCH_SIZE if dataset_type == 'train' else cfg.TEST.BATCH_SIZE
         self.data_aug    = cfg.TRAIN.DATA_AUG   if dataset_type == 'train' else cfg.TEST.DATA_AUG
 
         self.train_input_sizes = cfg.TRAIN.INPUT_SIZE
         self.strides = np.array(cfg.YOLO.STRIDES)
-        self.classes = utils.read_class_names(cfg.YOLO.CLASSES)
+        self.classes = utils.read_class_names(class_path)
         self.num_classes = len(self.classes)
         self.anchors = np.array(utils.get_anchors(cfg.YOLO.ANCHORS))
         self.anchor_per_scale = cfg.YOLO.ANCHOR_PER_SCALE
@@ -40,7 +40,6 @@ class Dataset(object):
         self.num_samples = len(self.annotations)
         self.num_batchs = int(np.ceil(self.num_samples / self.batch_size))
         self.batch_count = 0
-
 
     def load_annotations(self, dataset_type):
         with open(self.annot_path, 'r') as f:
